@@ -13,3 +13,7 @@ db/chroma_db/
 
 # VS Code settings (optional)
 .vscode/
+
+# Python virtual environment
+venv/
+.env/
