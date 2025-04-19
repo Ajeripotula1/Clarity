@@ -2,11 +2,11 @@
 import os
 from db import vector_db
 from dotenv import load_dotenv
-from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_core.messages import SystemMessage, HumanMessage, AIMessage
 from langchain_core.documents import Document
 from langchain_openai import ChatOpenAI
 from langchain_text_splitters import CharacterTextSplitter
-from langchain_community.document_loaders import TextLoader
+from langchain_community.document_loaders import TextLoader, PyPDFLoader
 from langchain_chroma import Chroma
 
 load_dotenv()
@@ -22,42 +22,51 @@ messages = [
 
 # Chunk File and embedd content  
 def process_file(file_path):
+    # Intialize Loader based on file type
     extension = os.path.splitext(file_path)[1].lower()
-    
+    if extension =='.txt':
+        loader = TextLoader(file_path=file_path)
+    elif extension =='.pdf':
+        loader = PyPDFLoader(file_path=file_path)
+    # Define splitting parameters
     text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=50)    # Define Chunk size and overlap 
     
     try:
-        # Handle txt file logic
-        if extension == ".txt":
-            loader = TextLoader(file_path=file_path)
-            documents = loader.load()
-            
-            # Split document into chunks and add 'source' and 'id' metadata to each chunk
-            docs = []
-            for i, chunk in enumerate(text_splitter.split_documents(documents)):
-                docs.append(Document(
-                    page_content = chunk.page_content,
-                    metadata={"source":file_path}, # Add Metadata
-                    id=f"{file_path}-{i}" # prevent adding duplicate chunks    
-                    )
+        documents = loader.load()
+        # Split document into chunks and add 'source' and 'id' metadata to each chunk
+        docs = []
+        for i, chunk in enumerate(text_splitter.split_documents(documents)):
+            docs.append(Document(
+                page_content = chunk.page_content,
+                metadata={"source":file_path}, # Add Metadata
+                id=f"{file_path}-{i}" # prevent adding duplicate chunks    
                 )
+            )
                  
-            # Display information about the split documents
-            print("\n--- Document Chunks Information ---\n")
-            print(f"Number of document chunks: {len(docs)}")
-            print(f"Sample chunk:\n{docs[0].page_content}\n")
+        # Display information about the split documents
+        print("\n--- Document Chunks Information ---\n")
+        print(f"Number of document chunks: {len(docs)}")
+        print(f"Sample chunk:\n{docs[0].page_content}\n")
             
-            # Add new documents to exisiting vector store
-            vector_db.add_documents(docs)
+        # Add new documents to exisiting vector store
+        vector_db.add_documents(docs)
     
-            return True 
+        return True 
     
     except Exception as e:
         print(f"Error processing document: {e}")
         return False
 
-def answer_question_based_on_notes(query: str):
-    '''Answers questions based on notes alone and returns relevant chunks'''
+def answer_question_based_on_notes(query: str, chat_history: list) -> dict:
+    ''' Answers questions based on notes alone and returns relevant chunks
+        
+        Args: 
+            query: Users query to llm as str
+            chat_history: list of dictionaries containing conversation between AI and user
+        
+        Returns:
+            dictionary with the answer and sources 
+    '''
     # Setup Vector Store Retriever to retrieve relevant docs based on query
     retriever = vector_db.as_retriever(
         search_type = 'similarity', # return chunks based on semantic similarity
@@ -70,25 +79,47 @@ def answer_question_based_on_notes(query: str):
     for i, doc in enumerate(relevant_docs,1):
         print(f"Document {i}, {doc.page_content}")
         
+    # Construct input for LLM
     sources = [doc.page_content for doc in relevant_docs]
-    # Combine the query and relevant documents for LLM to answer
-    combined_input = (
-        "Here are some documents that might help answer the question: " # Inform the LLM about the query and documents
-        + query
-        + "\n\nRelevant documents:\n\n"
-        + "\n\n".join(sources) # Attach the relevant documents
-        # Instruct LLM to answer ONLY based on exisiting notes
-        +"\n\nPlease Provide an answer based on ONLY the provided documents. If the answer is not found within the documents, respond with 'Answer not found in notes'."
-    )
-    # Define the messages for the model
-    messages =  [
-        SystemMessage(content="You are a helpful Note taking app assistant that answer questions based on the user's documents"),
-        HumanMessage(content=combined_input)
-    ]
+    context = "\n\n".join(sources) # join relevant pages
+    system_msg = SystemMessage(content="You are a helpful assistant that answers questions strictly using the user's uploaded notes.") # Set system intent 
     
-    # Invoke the model and return the response
+    # Build the chat history
+    messages = [system_msg]
+    for turn in chat_history:
+        if turn["role"] == "user":
+            messages.append(HumanMessage(content=turn["content"]))
+        elif turn["role"] == "assistant":
+            messages.append(AIMessage(content=turn["content"]))
+    
+    # Add user's query to chat history
+    messages.append(HumanMessage(
+        content=f"""Here are some docuements that might help answer the question: {query}
+        \n\nRelevant documents:\n{context}\n\n Answer the question primarily using the information in the provided documents. 
+        You may reason and reference earlier parts of this conversation if helpful.
+        If the answer is not found within the documents, respond with 'Answer not found in notes.'"""
+    ))
+    # messages.append(HumanMessage(
+    #     content=f"""Here are some docuements that might help answer the question: {query}
+    #     \n\nRelevant documents:\n{context}\n\n Answer the question using only the information in the provided documents. 
+    #     You may reason and reference earlier parts of this conversation if helpful.
+    #     If the answer is not found within the documents, respond with 'Answer not found in notes.'"""
+    # ))
+    # query_with_context = (
+    #     "Here are some documents that might help answer the question: " # Inform the LLM about the query and documents
+    #     + query
+    #     + "\n\nRelevant documents:\n\n"
+    #     + context # Attach the relevant documents
+    #     # Instruct LLM to answer ONLY based on exisiting notes
+    #     +"\n\nPlease Provide an answer based on ONLY the provided documents. If the answer is not found within the documents, respond with 'Answer not found in notes'."
+    # )
+    # print(type(query_with_context), query_with_context)
+    # Add user's query to chat history
+    # messages.apppend(HumanMessage(content=query_with_context))
+    
+    # Query LLM w/ chat history 
     response = model.invoke(messages)
-    # Display the full result and content only
+    
     print("\n--- Generated Response ---")
     # print("Full result:")
     # print(result)
@@ -100,3 +131,49 @@ def answer_question_based_on_notes(query: str):
         "answer" : response.content,
         "sources" : sources
     }
+    
+    
+# def answer_question_based_on_notes(query: str):
+#     '''Answers questions based on notes alone and returns relevant chunks'''
+#     # Setup Vector Store Retriever to retrieve relevant docs based on query
+#     retriever = vector_db.as_retriever(
+#         search_type = 'similarity', # return chunks based on semantic similarity
+#         search_kwargs = {"k":3} # specify how many chunks to return
+#     )
+#     relevant_docs = retriever.invoke(query)
+    
+#     # Display relevant results with the metadata
+#     print("\n-- Relevant Documents --")
+#     for i, doc in enumerate(relevant_docs,1):
+#         print(f"Document {i}, {doc.page_content}")
+        
+#     sources = [doc.page_content for doc in relevant_docs]
+#     # Combine the query and relevant documents for LLM to answer
+#     combined_input = (
+#         "Here are some documents that might help answer the question: " # Inform the LLM about the query and documents
+#         + query
+#         + "\n\nRelevant documents:\n\n"
+#         + "\n\n".join(sources) # Attach the relevant documents
+#         # Instruct LLM to answer ONLY based on exisiting notes
+#         +"\n\nPlease Provide an answer based on ONLY the provided documents. If the answer is not found within the documents, respond with 'Answer not found in notes'."
+#     )
+#     # Define the messages for the model
+#     messages =  [
+#         SystemMessage(content="You are a helpful Note taking app assistant that answer questions based on the user's documents"),
+#         HumanMessage(content=combined_input)
+#     ]
+    
+#     # Invoke the model and return the response
+#     response = model.invoke(messages)
+#     # Display the full result and content only
+#     print("\n--- Generated Response ---")
+#     # print("Full result:")
+#     # print(result)
+#     print("Content only:")
+#     print(response.content)
+    
+#     # Return Response content as well as relevant sources to API 
+#     return {
+#         "answer" : response.content,
+#         "sources" : sources
+#     }
