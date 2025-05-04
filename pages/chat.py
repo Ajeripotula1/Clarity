@@ -9,7 +9,7 @@ if "chat_history" not in st.session_state:
     
 # Send chat + history to backend
 def send_query(query):
-    API_URL = "http://localhost:8000/chat"  # Adjust if different
+    API_URL = "http://localhost:8000/chat"  
     # Format chat history for the backend 
     payload = {
         "query" : query,
@@ -46,13 +46,3 @@ for turn in st.session_state.chat_history:
         st.markdown(turn["content"])
 
         
-        # if query:
-        #     with st.spinner("Thinking..."):
-        #         query_url = "http://localhost:8000/ask" 
-
-        #         response = requests.post(query_url, json={"query":query})
-        #         result = response.json()
-        #         st.write("**Answer:**", result['answer'])
-        #         with st.expander("Sources"):
-        #             for source in result["sources"]:
-        #                 st.write(source)
