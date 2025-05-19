@@ -49,13 +49,30 @@ Clarity uses:
 ---
 
 ### 🚀 Try It Out
+1. Clone the repo
+
+### 🚀 Try It Out
+
+1. Clone the repo and set up the project:
 
 ```bash
-Locate the .env.example file and add your OpenAI API key
-
+# Clone the repository
 git clone https://github.com/yourusername/clarity
 cd clarity
+
+# Create and set up your virtual environment (optional but recommended)
+python -m venv venv
+source venv/bin/activate  # On Windows, use venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Copy env example and add your OpenAI API key
+cp .env.example .env
+# Then edit the .env file to insert your key
+
 # Start backend
 uvicorn app.main:app --reload
-# Then run frontend
+
+# In a new terminal, run frontend
 streamlit run app/ui.py
