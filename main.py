@@ -22,7 +22,7 @@ load_dotenv()
 
 ## This File handles the backend logic called by the API Routes ## 
 
-model = ChatOpenAI(model="gpt-3.5-turbo")
+model = ChatOpenAI(model="gpt-4o")
 
 # VectorDB obj
 vector_db = get_db()

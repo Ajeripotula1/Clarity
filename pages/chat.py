@@ -25,7 +25,7 @@ def send_query(query):
 
 # Input box for user query
 # Correct usage
-user_query = st.chat_input("Ask questions based on your notes:")
+user_query = st.chat_input("Your Question:")
 
 
 if user_query:

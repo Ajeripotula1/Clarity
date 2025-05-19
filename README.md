@@ -51,6 +51,8 @@ Clarity uses:
 ### 🚀 Try It Out
 
 ```bash
+Locate the .env.example file and add your OpenAI API key
+
 git clone https://github.com/yourusername/clarity
 cd clarity
 # Start backend

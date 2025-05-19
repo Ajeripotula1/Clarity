@@ -2,7 +2,6 @@ import streamlit as st
 import requests
 import mimetypes
 
-st.set_page_config(page_title="Clarity", page_icon=":brain:",layout="centered")
 st.title("📤 Upload")
 st.markdown("Upload your notes for summaries, Q&A, and flashcard generation.")
 # File Upload
