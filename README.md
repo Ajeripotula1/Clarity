@@ -49,9 +49,6 @@ Clarity uses:
 ---
 
 ### 🚀 Try It Out
-1. Clone the repo
-
-### 🚀 Try It Out
 
 ```bash
 # Clone the repository
