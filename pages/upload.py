@@ -2,10 +2,11 @@ import streamlit as st
 import requests
 import mimetypes
 
-st.title("Upload")
+st.set_page_config(page_title="Clarity", page_icon=":brain:",layout="centered")
+st.title("📤 Upload")
 st.markdown("Upload your notes for summaries, Q&A, and flashcard generation.")
 # File Upload
-uploaded_file = st.file_uploader("Upload your notes", type=["txt","pdf"])
+uploaded_file = st.file_uploader("", type=["txt","pdf"])
 if uploaded_file:
     mime_type, _ = mimetypes.guess_type(uploaded_file.name) # Dyamically determine media type
     if not mime_type:

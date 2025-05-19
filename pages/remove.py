@@ -1,12 +1,13 @@
 import streamlit as st
 import requests
 
+# st.set_page_config(page_title="Clarity", page_icon=":brain:",layout="centered")
 st.title("Remove Documents")
 # CSS to make all buttons same width and prevent text wrap
 st.markdown("""
 <style>
 .stButton > button {
-    width: 100%;
+    width: 80%;
     height: 3em;
     white-space: nowrap;
     overflow: hidden;
