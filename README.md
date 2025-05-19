@@ -53,11 +53,9 @@ Clarity uses:
 
 ### 🚀 Try It Out
 
-1. Clone the repo and set up the project:
-
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/clarity
+git clone https://github.com/Ajeripotula1/Clarity
 cd clarity
 
 # Create and set up your virtual environment (optional but recommended)
