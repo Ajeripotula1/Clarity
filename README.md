@@ -70,4 +70,4 @@ cp .env.example .env
 uvicorn app.main:app --reload
 
 # In a new terminal, run frontend
-streamlit run app/ui.py
+streamlit run pages/app.py
