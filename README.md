@@ -1,44 +1,59 @@
 # 🧠 Clarity
 
-> “Turn messy notes into flashcards, crisp summaries, and instant answers. Clarity grows as you do.”
+> “Turn dense notes into flashcards, crisp summaries, and instant answers. Clarity grows as you do.”
 
-**Clarity** is an AI-powered second brain. Upload your notes — Clarity will read them, understand your style, and help you study smarter by generating summaries, flashcards, and personalized answers.
+**Clarity** is an AI-powered second brain. Upload your notes — Clarity will read them, understand your style, and help you study smarter by generating summaries, flashcards, and personalized answers to your questions. Clarity gives you the tools to turn passive notes into active learning.
 
-Built with LLMs, RAG, and modern AI tooling.
+Clarity stands out from other document summarization apps by thinking with your material. It blends contextual awareness with AI reasoning te deliver relevant, thoughtful answers. 
+
+Built with OpenAI LLM, RAG, and LangChain.
 
 ---
 
 ## ✨ Features
 
-- 📝 **Upload Notes** — Supports `.txt`, `.md`, and `.pdf`
+- 📂 **Upload Files** — Add `.txt` and `.pdf` files to your knowledge base
 - 🔍 **Searchable Memory** — Uses embeddings + vector search for retrieval
-- 💬 **Chat with Your Notes** — LLM chatbot that cites your uploaded content
-- 🧠 **Smart Summaries** — TL;DR-style summaries per note
-- 🎓 **Flashcard Generator** — Q&A note cards from your uploads
-- 🧬 **Style Adaptation** — Mirrors your writing style over time (prototype)
-- 🌐 **Frontend UI** — Streamlit or minimal React for quick interaction
+- 💬 **Chat with Your Notes** — Ask anything. Clarity will prioritize your uploaded notes, but if it finds gaps, it fills them using reliable general knowledge — just like a great tutor would.
+- 🧠 **Smart Summaries** — Tired of reading dense paragraphs? Get clean concise summaries outlining Big Ideas, Key terms, and TL;DR-style takeaways.
+- 🎓 **Flashcard Generator** — Turn any document into interactive flashcards with one click — perfect for spaced repetition and active recall.
+- 🌐 **Frontend UI** — Clean, minimal, and modularized UI for quick interactions
 
 ---
+
+### 🤖 How It Works
+
+Clarity uses:
+
+- **LLMs (via LangChain)** to interpret user queries and generate responses
+- **ChromaDB** for vector-based semantic search across uploaded notes
+- **FastAPI** to handle backend logic and file processing
+- **Streamlit** for a focused, responsive user interface
+
+> Answers are grounded in your uploaded material. When needed, Clarity enhances them with general knowledge — like a smart, personalized tutor.
+
+---
+
 
 ## 🏗️ Tech Stack
 
 | Area | Tools |
 |------|-------|
 | **Backend** | Python, FastAPI |
-| **LLM APIs** | OpenAI GPT-4 / Claude / Hugging Face |
+| **LLM APIs** | OpenAI GPT-4 |
 | **RAG** | LangChain |
-| **Embeddings** | OpenAI Embeddings / SentenceTransformers |
-| **Vector Store** | FAISS / Chroma |
-| **Frontend** | Streamlit or basic React (TBD) |
-| **Storage** | Local filesystem / S3 (optional) |
-| **Deployment** | Docker, EC2 / Render / Vercel (optional) |
-| **Authentication** | Token-based / Firebase (optional) |
+| **Embeddings** | OpenAI Embeddings |
+| **Vector Store** |Chroma |
+| **Frontend** | Streamlit |
 
 ---
 
-## 🛠️ Setup
+### 🚀 Try It Out
 
-### 1. Clone the repo
 ```bash
-git clone https://github.com/yourusername/clarity-ai.git
-cd clarity-ai
+git clone https://github.com/yourusername/clarity
+cd clarity
+# Start backend
+uvicorn app.main:app --reload
+# Then run frontend
+streamlit run app/ui.py
